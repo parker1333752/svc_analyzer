@@ -11,6 +11,9 @@ consoleConfig = {
 
 #inputPath = 'Z:/toVM/svc_analyzer_code/service/data'
 #inputPath = 'mnt/hgfs/toVM/svc_analyzer_code/service/data'
+
 #AlgorithmFolder = '/mnt/hgfs/toVM/svc_analyzer_code/service/algorithmfiles'
 #AlgorithmFolder = 'Z:/toVM/svc_analyzer_code/service/algorithmfiles'
 AlgorithmFolder = '/home/lisijun/svc_analyzer_code/service/algorithmfiles'
+#AlgorithmFolder = 'C:/Temp/algorithmfiles'
+
