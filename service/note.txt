@@ -1,0 +1,27 @@
+subprocess need to know
+1. set input and output file
+    use list in subprocess.Popen(args)
+    like this:
+        subprocess.Popen(['python','hello.py','input.txt','output.txt'])
+    it can also add arguments in method Popen() like this to redirect stdin and stdout:
+        fin=open('input.txt','r')
+        fout=open('output.txt','w')
+        p=subprocess.Popen(['python','hello.py'],stdin=fin,stdout=fout)
+
+2. when process end?
+    use p.poll() or p.wait() to check if process terminated.
+    if return value == None means process is running, else return value is equal to returncode of program.
+    if process is not end, use p.terminate() to end it.
+3. how to get output?
+    read output.txt
+4. if process end with error, how to detect it? returncode?
+    in python program, use sys.exit(0) to set returncode=0 and end the process
+    if returncode!=0, process was end with error.
+
+5. how to access datasetfiles?
+    datasetid? inputfiles id?
+    output how to relate to dataset?
+6. how to access postgre?
+
+
+1.  如何把心电图分解成一个一个的心跳？

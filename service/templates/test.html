@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> -->
+    </head>
+    <body>
+        <h2>Task List</h2>
+        <div id="task-list">
+        </div>
+        <button id="get-task-list">Get Task List</button>
+
+        <h3>Submit Task</h3>
+
+        <form action="/tasks" method="POST">
+            <div>
+                <label>Id:</label>
+                <input type="text" name="id" value="1" />
+            </div>
+            <div>
+                <label>Code:</label>
+                <input type="text" name="code" value='abc'/>
+            </div>
+            <div>
+                <label>Note:</label>
+                <input type="text" name="note" value='hello'/>
+            </div>
+            <div>
+                <label>TemplateId:</label>
+                <input type="text" name="templateId" value='1001'/>
+            </div>
+            <div>
+                <label>Inputs:</label>
+                <input type="text" name="inputs"/> 
+                <input type="text" name="inputs"/> 
+            </div>
+            <div>
+                <label>Outputs:</label>
+                <input type="text" name="outputs"/> 
+                <input type="text" name="outputs"/> 
+            </div>
+            <div>
+                <label>Algorithms:</label>
+                <input type="text" name="algorithms"/>
+                <input type="text" name="algorithms"/>
+            </div>
+            <input type="submit" value="Submit" />
+        </form>
+        <script type="text/javascript">
+
+        $('#get-task-list').click(function () {
+            $.get('/tasks', function(res) {
+                $('#task-list').html(res.result.length ? res.result.toString() : 'No tasks');
+            });
+        });
+        </script>
+    </body>
+</html>
