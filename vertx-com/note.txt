@@ -1,0 +1,12 @@
+notice
+1. vertical is single threaded.
+2. vertical can't be blocked, unless use it as worker vertical.
+3. use event bus to communicate between verticals.
+    (even in different vert.x instance on the same network, see main manual, with '-cluster' option)
+4. Vert.x provides a shared map and shared set falicity to share data between vertical in the same Vert.x instance.
+5. use sock.pause() and sock.resume() to control socket.
+	use sock.write_queue_full and sock.drain_handler to detect queue status.
+    Most importantly sock.pause() will not loss data.
+
+tasks
+1. use a buffer in sharedData to share data between verticals (for test).

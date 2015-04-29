@@ -1,0 +1,14 @@
+app_config={
+	"socket.config":{
+		"port":8000,
+		"host":"0.0.0.0",
+    },
+    "http.config":{
+        "port":1234,
+        "host":"localhost",
+    },
+    "http.client.config":{
+        "remote_port":4321,
+        "remote_host":"localhost",
+    },
+}

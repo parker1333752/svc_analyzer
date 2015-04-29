@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv=Content-Type content="text/html;charset=utf-8">
+        <title>websocket test</title>
+        <script type = 'text/javascript' language="javascript">
+            var ws = new WebSocket('ws://192.168.1.151:8000');
+
+            ws.onopen = function()
+            {
+                console.log('open');
+                ws.send('Hello, I am in');
+            };
+
+            ws.onmessage = function(evt)
+            {
+                console.log(evt.data);
+                document.getElementById('text1').value += evt.data;
+
+                document.getElementById('text1').scrollTop = document.getElementById('text1').scrollHeight;
+            };
+
+            ws.onclose = function(evt)
+            {
+                console.log('WebSocketClosed');
+                alert('WebSocketClosed');
+            };
+
+            ws.onerror = function(evt)
+            {
+                console.log('WebSocketError');
+            };
+
+            document.onkeydown = function(evt)
+            {
+                if(window.event){
+                    evt = window.event;
+                }
+                var int_keycode = evt.charCode || evt.keyCode;
+                if(int_keycode == '13'){
+                    if(document.activeElement.id == 'input1'){
+                        var input1 = document.getElementById('input1');
+                        var data = input1.value;
+                        input1.value = "";
+                        ws.send(data);
+                    }
+                }
+            };
+
+        </script>
+    </head>
+
+    <body>
+        <textarea id='text1' cols='25' rows='20'></textarea>
+        </br>
+        <input id='input1' type='input' />
+    </body>
+</html>
