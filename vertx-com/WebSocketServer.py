@@ -14,11 +14,14 @@ def websocket_handler(socket):
     uuid = getUUID()
     #print 'uuid =',uuid
 
+    def send_mycommand(data):
+        message = {'uuid':uuid,'message':data}
+        EventBus.publish('send.mycommand',message)
+
     @socket.data_handler
     def data_handler(buff):
         resp_data = '%r'%buff
-        message = {'uuid':uuid,'message':resp_data}
-        EventBus.publish('send.mycommand',message)
+        send_mycommand(resp_data)
         print 'websocket receive:',resp_data
         # socket.write_text_frame(resp+'\n')
 
@@ -43,6 +46,7 @@ def websocket_handler(socket):
     EventBus.register_handler('receive.error',handler=receive_error)
     resultHandleId = EventBus.register_handler('receive.myresult'+uuid,handler=receive_result)
     
+    send_mycommand('')
     print 'hello websocket',uuid
 
 server.listen(config['port'],config['host'])

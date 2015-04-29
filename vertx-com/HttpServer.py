@@ -15,6 +15,12 @@ def request_handler(req):
             EventBus.send('receive.myresult'+uuid,buff)
             print 'http server result:',buff
 
-    req.response.end('vertx ok')
+
+    if req.path == '/myresult':
+        req.response.end('vertx ok')
+
+    else:
+        req.response.end('unknown request')
+
 
 server.listen(config['port'],config['host'])

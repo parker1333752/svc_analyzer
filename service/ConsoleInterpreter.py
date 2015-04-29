@@ -1,9 +1,9 @@
 from threading import Thread,Lock
 from multiprocessing import Pool, Manager
 from HttpClient import TxHttpClient
-from code import InteractiveInterpreter
 from config import consoleConfig as globalConfig
-import sys, os
+import sys
+import os
 import time
 
 class _WrapperStdout(object):
@@ -98,7 +98,7 @@ class TxConsoleInterpreter(object):
         self.pool = None
         self.consolesLock.release()
 
-    def input_cmd(self,consoleId=None,cmd=None):
+    def input_cmd(self,consoleId=None,cmd=''):
         self.cmdBufferLock.acquire()
         args = (consoleId,cmd)
         self.cmdBuffer.append(args)
@@ -121,6 +121,8 @@ class TxConsoleInterpreter(object):
 
                         if i[1] != None:
                             self._push_input(i[0],i[1])
+                        else:
+                            self._push_input(i[0])
 
                 self.cmdBuffer = []
 
@@ -253,10 +255,6 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
     from config import AlgorithmFolder as workFolder
     os.chdir(workFolder)
 
-    con = InteractiveInterpreter()
-    buff = []
-    more = False
-
     print 'subprocess start,',os.getpid()
 
     wrapperStdout = _WrapperStdout(outputQueue)
@@ -265,31 +263,17 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
     sys.stdout = wrapperStdout
     sys.stderr = wrapperStdout
 
-    try:
-        while True:
-            if ctrlQueue.empty == False:
-                ctrl = ctrlQueue.get()
-                if ctrl == True:
-                    break
+    def readline(a):
+        sys.stdout.write(a)
+        while cmdQueue.empty():
+            pass
 
-            if not cmdQueue.empty():
-                cmd = cmdQueue.get()
-                prompt = more and '... ' or '>>> '
-                print prompt + cmd
-                source = ''.join(buff + [cmd])
-                if con.runsource(source,TxConsoleInterpreter.config['CONSOLES_FILENAME']):
-                    more = True
-                    buff.append(cmd)
-                else:
-                    more = False
-                    del buff[:]
+        cmd = cmdQueue.get()
+        print cmd
+        return cmd
 
-            time.sleep(0.1)
-
-    except:
-        print 'subprocess error, end'
-
-    print 'I\'m closing'
+    import code
+    code.interact(None,readline)
 
     sys.stdout = __console_out__
     sys.stderr = __console_err__

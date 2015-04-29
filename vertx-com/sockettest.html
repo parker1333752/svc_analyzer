@@ -9,7 +9,6 @@
             ws.onopen = function()
             {
                 console.log('open');
-                ws.send('Hello, I am in');
             };
 
             ws.onmessage = function(evt)
@@ -51,8 +50,8 @@
     </head>
 
     <body>
-        <textarea id='text1' cols='25' rows='20'></textarea>
+        <textarea id='text1' cols='100' rows='40'></textarea>
         </br>
-        <input id='input1' type='input' />
+        input:<input id='input1' type='input' />
     </body>
 </html>

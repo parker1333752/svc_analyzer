@@ -5,7 +5,7 @@ app_config={
     },
     "http.config":{
         "port":1234,
-        "host":"localhost",
+        "host":"0.0.0.0",
     },
     "http.client.config":{
         "remote_port":4321,
