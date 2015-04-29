@@ -5,7 +5,7 @@ serverConfig = {
 }
 consoleConfig = {
     'remote_host': 'localhost',
-    'remote_port': '1234',
+    'remote_port': 1234,
     'remote_path': '/myresult'
 }
 
