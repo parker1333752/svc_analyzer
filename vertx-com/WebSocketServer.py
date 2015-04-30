@@ -14,9 +14,12 @@ def websocket_handler(socket):
     uuid = getUUID()
     #print 'uuid =',uuid
 
-    def send_mycommand(data):
+    def send_mycommand(data,reply=None):
         message = {'uuid':uuid,'message':data}
-        EventBus.publish('send.mycommand',message)
+        if reply == None:
+            EventBus.send('send.mycommand',message)
+        else:
+            EventBus.send('send.mycommand',message,reply)
 
     @socket.data_handler
     def data_handler(buff):
@@ -33,8 +36,10 @@ def websocket_handler(socket):
 
     @socket.close_handler
     def close_handler():
-        #EventBus.unregister_handler('receive.myresult'+uuid,resultHandleId)
-        EventBus.unregister_handler(resultHandleId)
+        def closing(msg):
+            EventBus.unregister_handler(resultHandleId)
+        
+        send_mycommand('clear',closing)
         print 'closed websocket',uuid
 
     def receive_error(msg):

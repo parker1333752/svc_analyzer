@@ -145,12 +145,8 @@ class TxHttpIoService(TiloInterpreter):
             TxHttpIoService.consoles.start()
 
         uuid = request.args.get('uuid')
-        ctrl = request.args.get('ctrl')
         cmd = request.data
         print 'uuid=%s,cmd=%s'%(uuid,cmd)
-
-        if ctrl == 'terminate':
-            TxHttpIoServer.consoles.input_cmd(uuid,'clear')
 
         TxHttpIoService.consoles.input_cmd(uuid,cmd)
         return jsonify(result=1)

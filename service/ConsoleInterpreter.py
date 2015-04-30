@@ -103,6 +103,7 @@ class TxConsoleInterpreter(object):
         args = (consoleId,cmd)
         self.cmdBuffer.append(args)
         self.cmdBufferLock.release()
+        print 'id=<%s>, cmd=<%s>. Count=%d'%(consoleId,cmd,len(self.consoles))
 
     def cmd_scanner(self):
         '''scan for cmd input'''
@@ -138,10 +139,18 @@ class TxConsoleInterpreter(object):
         while self.scannerRunning:
             self.consolesLock.acquire()
 
+            deleted = []
             for i in self.consoles.iterkeys():
-                data = self._fetch_output(i)
-                if data != None:
-                    self._send_data(i,data)
+                if self.consoles[i].result.ready() == True:
+                    deleted.append(i)
+
+                else:
+                    data = self._fetch_output(i)
+                    if data != None:
+                        self._send_data(i,data)
+
+            for i in deleted:
+                del self.consoles[i]
 
             self.consolesLock.release()
             
@@ -191,14 +200,15 @@ class TxConsoleInterpreter(object):
             return 'there is not such console'
 
         self.consoles[consoleId].ctrlQueue.put(True)
+        self.consolesLock.release()
 
-        try:
-            self.consoles[consoleId].result.wait(self.__class__.config['TERMINATE_TIMEOUT'])
-        except Exception as e:
-            return 'Process can\'t be terminated'
-        finally:
-            del self.consoles[consoleId]
-            self.consolesLock.release()
+        #try:
+            #self.consoles[consoleId].result.wait(self.__class__.config['TERMINATE_TIMEOUT'])
+        #except Exception as e:
+            #return 'Process can\'t be terminated'
+        #finally:
+            #del self.consoles[consoleId]
+            #self.consolesLock.release()
 
     def _fetch_output(self,consoleId=None):
         '''
@@ -223,7 +233,6 @@ class TxConsoleInterpreter(object):
         write a command to input queue
         console process will read from input queue to get python command
         '''
-        print 'hello, id=<%s>, cmd=<%s>'%(consoleId,data)
         if data == None:
             return
 
@@ -262,10 +271,12 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
     __console_err__ = sys.stderr
     sys.stdout = wrapperStdout
     sys.stderr = wrapperStdout
-
+    
     def readline(a):
         sys.stdout.write(a)
         while cmdQueue.empty():
+            if not ctrlQueue.empty():
+                raise EOFError
             pass
 
         cmd = cmdQueue.get()
@@ -277,5 +288,6 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
 
     sys.stdout = __console_out__
     sys.stderr = __console_err__
+    print 'subprocess stop,',os.getpid()
     return 0
 

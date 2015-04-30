@@ -22,6 +22,8 @@ def command_request(msg):
     '''
     send_data = msg.body.get('message')
     args = '?uuid=%s'%msg.body.get('uuid')
+    msg.reply('')
+
     request = client.post('/myconsole'+args, command_response)
     #request.put_header('Content-Type','application/json')
     request.put_header('Content-Length',str(len(send_data)))
