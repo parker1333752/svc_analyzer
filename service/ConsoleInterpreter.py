@@ -276,8 +276,10 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
         sys.stdout.write(a)
         while cmdQueue.empty():
             if not ctrlQueue.empty():
-                raise EOFError
-            pass
+                ctrl = ctrlQueue.get()
+                if ctrl == True:
+                    #raise KeyboardInterrupt
+                    raise EOFError
 
         cmd = cmdQueue.get()
         print cmd
@@ -288,6 +290,6 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
 
     sys.stdout = __console_out__
     sys.stderr = __console_err__
-    print 'subprocess stop,',os.getpid()
+    print 'subprocess closed,',os.getpid()
     return 0
 
