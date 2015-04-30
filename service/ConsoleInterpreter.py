@@ -282,7 +282,7 @@ def console_process(cmdQueue,outputQueue,ctrlQueue):
                     raise EOFError
 
         cmd = cmdQueue.get()
-        print cmd
+        # print cmd
         return cmd
 
     import code
