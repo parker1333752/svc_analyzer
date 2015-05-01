@@ -146,7 +146,7 @@ class TxHttpIoService(TiloInterpreter):
 
         uuid = request.args.get('uuid')
         cmd = request.data
-        print 'uuid=%s,cmd=%s'%(uuid,cmd)
+        #print 'uuid=%s,cmd=%s'%(uuid,cmd)
 
         TxHttpIoService.consoles.input_cmd(uuid,cmd)
         return jsonify(result=1)

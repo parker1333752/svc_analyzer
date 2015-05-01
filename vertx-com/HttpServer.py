@@ -11,16 +11,14 @@ def request_handler(req):
     def body_handler(buff):
         if req.path == '/myresult':
             uuid = req.params.get('uuid')
-            #print 'uuid=%s'%uuid
             EventBus.send('receive.myresult'+uuid,buff)
-            print 'http server result:',buff
 
+            print 'output:',buff
 
     if req.path == '/myresult':
         req.response.end('vertx ok')
 
     else:
         req.response.end('unknown request')
-
 
 server.listen(config['port'],config['host'])

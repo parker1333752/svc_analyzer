@@ -1,7 +1,6 @@
 from threading import Thread,Lock
-from multiprocessing import Pool, Manager
+from multiprocessing import Process, Queue
 from HttpClient import TxHttpClient
-from config import consoleConfig as globalConfig
 import sys
 import os
 import time
@@ -10,11 +9,14 @@ class _WrapperStdout(object):
     ''' wrapper class of stdout,
     used to get stdout
     '''
-    def __init__(self,queue):
-        self.queue = queue
+    def __init__(self,send_data):
+        self.send_data = send_data
 
     def write(self, data):
-        self.queue.put(data)
+        self.send_data(data)
+
+    def flush(self):
+        pass
 
 class _TxConsoleModel(object):
     '''console Model
@@ -22,15 +24,15 @@ class _TxConsoleModel(object):
     Storage some information about console process.
     1:1 with console process.
     '''
-    consts = ['cmdQueue','outputQueue','ctrlQueue','result']
-    def __init__(self,manager):
-        self.cmdQueue = manager.Queue()
-        self.outputQueue = manager.Queue()
-        self.ctrlQueue = manager.Queue()
-        self.result = None
+    consts = ['cmdQueue','ctrlQueue','process']
+    def __init__(self):
+        self.cmdQueue = Queue()
+        #self.ctrlQueue = Queue()
+        self.process = None
+        self.freshTime = time.time()
 
     def __setattr__(self, name, value):
-        if name in self.__class__.consts and name in self.__dict__.keys():
+        if name in _TxConsoleModel.consts and name in self.__dict__.keys():
             if self.__dict__[name] != None:
                 pass
             else:
@@ -44,119 +46,110 @@ class TxConsoleInterpreter(object):
     use http client to send result back.
     '''
     config = {
+        # how many subprocess can be run in the same time.
         'MAX_PROCESS_COUNT' : 10,
-        'TERMINATE_TIMEOUT' : 10,
-        'CONSOLES_FILENAME' : '<myconsole>', # just for display
+        # if not any cmd input over this time,subprocess will throw to garbage.
+        'TERMINATE_TIMEOUT' : 3600, 
+        # just for display
+        'CONSOLES_FILENAME' : '<myconsole>', 
     }
 
     def __init__(self):
         self.consoles = {}
-        self.pool = None
-        self.manager = None
-        self.client = TxHttpClient()
-        self.scannerRunning = False
-        self.cmdBuffer = []
+        #self.pool = None
+        #self.manager = None
         self.consolesLock = Lock()
+        self.cmdBuffer = []
         self.cmdBufferLock = Lock()
+        self.cmdscannerThread = None
+        self.started = False
+        self.__register_terminal()
 
     def start(self):
-        '''
-        start Process Pool,
-        create new Thread to run result scanner.
-        '''
         print 'console pool start',os.getpid()
-        self.pool = Pool(self.__class__.config['MAX_PROCESS_COUNT'])
-        self.manager = Manager()
-        self.consoles = {}
-
-        self.scannerRunning = True
-        self.scannerThread = Thread(target=self.output_scanner)
-        self.scannerThread.start()
-        self.cmdscannerThread = Thread(target=self.cmd_scanner)
-        self.cmdscannerThread.start()
-
-        self.client.connect(globalConfig['remote_host'],globalConfig['remote_port'])
+        self.started = True
+        Thread(target=self.garbage_collection).start()
 
     def is_started(self):
-        if self.pool != None:
-            return True
-        else:
-            return False
+        return self.started
+
+    def __del__(self):
+        self.terminate()
+
+    def __register_terminal(self):
+        def getfunc(origin):
+            def func(sig,frame):
+                self.terminate()
+                origin(sig,frame)
+            return func
+
+        import signal
+        func1 = getfunc(signal.getsignal(signal.SIGINT))
+        func2 = getfunc(signal.getsignal(signal.SIGTERM))
+        signal.signal(signal.SIGINT,func1)
+        signal.signal(signal.SIGTERM,func2)
 
     def terminate(self):
         '''
         close Process pool
         close result scanner
         '''
-        self.scannerRunning = False
+        self.started = False
+        print 'doing something closing'
 
-        self.consolesLock.aquire()
-        for i in self.consoles.itervalues():
-            i.ctrlQueue.put(True)
-        #self.pool.close()
-        self.pool.terminate()
-        self.pool = None
-        self.consolesLock.release()
+        for i in self.consoles.keys():
+            self._delete_console(i)
 
     def input_cmd(self,consoleId=None,cmd=''):
         self.cmdBufferLock.acquire()
         args = (consoleId,cmd)
         self.cmdBuffer.append(args)
         self.cmdBufferLock.release()
-        print 'id=<%s>, cmd=<%s>. Count=%d'%(consoleId,cmd,len(self.consoles))
+
+        if self.cmdscannerThread == None or not self.cmdscannerThread.is_alive():
+            self.cmdscannerThread = Thread(target=self.cmd_scanner)
+            self.cmdscannerThread.start()
+
 
     def cmd_scanner(self):
         '''scan for cmd input'''
-        print 'start scan cmd'
-        while self.scannerRunning:
-            if not len(self.cmdBuffer) == 0:
+        while self.started:
+            if len(self.cmdBuffer) > 0:
                 self.cmdBufferLock.acquire()
-
-                for i in self.cmdBuffer:
-                    if i[1] == 'clear':
-                        print self._delete_console(i[0])
-
-                    else:
-                        if not self.has_console(i[0]):
-                            print self._add_console(i[0])
-
-                        if i[1] != None:
-                            self._push_input(i[0],i[1])
-                        else:
-                            self._push_input(i[0])
-
-                self.cmdBuffer = []
-
+                item = self.cmdBuffer.pop(0)
                 self.cmdBufferLock.release()
 
-            time.sleep(0.1)
+                print 'id=<%s>, cmd=<%s>. count=%d'%(item[0],item[1],len(self.consoles))
 
-    def output_scanner(self):
-        '''scan console result output, and send it out by Http Client.
-        Shall run in new Thread and non-block main Thread
-        '''
-        print 'start scan result'
-        while self.scannerRunning:
-            self.consolesLock.acquire()
-
-            deleted = []
-            for i in self.consoles.iterkeys():
-                if self.consoles[i].result.ready() == True:
-                    deleted.append(i)
+                if item[1] == 'clear':
+                    print self._delete_console(item[0])
 
                 else:
-                    data = self._fetch_output(i)
-                    if data != None:
-                        self._send_data(i,data)
+                    print self._add_console(item[0])
 
-            for i in deleted:
-                del self.consoles[i]
+                    if item[1] != None:
+                        self._push_input(item[0],item[1])
+                    else:
+                        self._push_input(item[0])
+
+            else:
+                break
+
+    def garbage_collection(self):
+        while self.started:
+            nowTime = time.time()
+            garbageList = []
+            self.consolesLock.acquire()
+            for i in self.consoles.iterkeys():
+                console = self.consoles[i]
+                if console.freshTime + TxConsoleInterpreter.config['TERMINATE_TIMEOUT'] <= nowTime:
+                    garbageList.append(i)
 
             self.consolesLock.release()
-            
-            time.sleep(0.1)
+            for i in garbageList:
+                self._delete_console(i)
 
-        print 20*'-','console terminate','-'*20
+            time.sleep(10)
 
     def has_console(self,consoleId=None):
         self.consolesLock.acquire()
@@ -168,47 +161,54 @@ class TxConsoleInterpreter(object):
         return rt
 
     def _add_console(self,consoleId=None):
-        if self.pool == None:
-            return 'console process pool haven\'t started'
+        if self.started == False:
+            return 'console pool haven\'t start'
 
         self.consolesLock.acquire()
         if self.consoles.has_key(consoleId):
             self.consolesLock.release()
             return 'id existed'
 
-        if len(self.consoles) >= self.__class__.config['MAX_PROCESS_COUNT']:
+        if len(self.consoles) >= TxConsoleInterpreter.config['MAX_PROCESS_COUNT']:
             self.consolesLock.release()
             return 'Process pool is full'
 
-        console = _TxConsoleModel(self.manager)
-
-        args = (console.cmdQueue,console.outputQueue,console.ctrlQueue)
-        console.result = self.pool.apply_async(console_process,args=args)
+        console = _TxConsoleModel()
+        #args = (console.cmdQueue,console.ctrlQueue,consoleId)
+        args = (console.cmdQueue,consoleId)
+        #console.result = self.pool.apply_async(console_process,args=args)
+        console.process = Process(target=console_process,args=args)
+        console.close_handler = Thread(target=self._close_handler,args=(consoleId,console.process))
 
         self.consoles[consoleId] = console
 
+        console.close_handler.start()
         self.consolesLock.release()
-        return
+
+        return 'add new console: %s'%consoleId
+
+    def _close_handler(self,consoleId,mprocess):
+
+        mprocess.start()
+        mprocess.join()
+
+        del self.consoles[consoleId]
+
+        print 'proces close,',consoleId
 
     def _delete_console(self,consoleId=None):
         '''
         delete a console process
         '''
+        print 'delete1',consoleId
         self.consolesLock.acquire()
-        if not self.consoles.has_key(consoleId):
-            self.consolesLock.release()
-            return 'there is not such console'
-
-        self.consoles[consoleId].ctrlQueue.put(True)
+        console = self.consoles.get(consoleId)
         self.consolesLock.release()
 
-        #try:
-            #self.consoles[consoleId].result.wait(self.__class__.config['TERMINATE_TIMEOUT'])
-        #except Exception as e:
-            #return 'Process can\'t be terminated'
-        #finally:
-            #del self.consoles[consoleId]
-            #self.consolesLock.release()
+        if console == None:
+            return 'there is not such console'
+        else:
+            console.process.terminate()
 
     def _fetch_output(self,consoleId=None):
         '''
@@ -220,15 +220,13 @@ class TxConsoleInterpreter(object):
         data = ''
         while not self.consoles[consoleId].outputQueue.empty():
             data += self.consoles[consoleId].outputQueue.get()
-
-        #self.consoles[consoleId].outputQueue.task_done()
         
         if len(data) == 0:
             data = None
 
         return data
 
-    def _push_input(self,consoleId=None,data=None):
+    def _push_input(self,consoleId=None,data=''):
         '''
         write a command to input queue
         console process will read from input queue to get python command
@@ -244,48 +242,43 @@ class TxConsoleInterpreter(object):
         self.consoles[consoleId].cmdQueue.put(data)
         self.consolesLock.release()
 
-    def _send_data(self,consoleId=None,data=None):
-        '''
-        use http client to send data to Vert.x verticle.
-        Or you can rewrite this method and use other way to send data
-        '''
-        if data == None:
-            return
-
-        print 'send ',data
-        self.client.post(globalConfig['remote_path']+'?uuid=%s'%consoleId,data)
-
-def console_process(cmdQueue,outputQueue,ctrlQueue):
+def console_process(cmdQueue,consoleId):
     '''
     Read command from stdin
     and execute command,
     write console output to stdout.
     '''
+    print 'subprocess start,',os.getpid()
+
+    import code
     from config import AlgorithmFolder as workFolder
     os.chdir(workFolder)
 
-    print 'subprocess start,',os.getpid()
+    from config import consoleConfig as globalConfig
+    client = TxHttpClient()
+    client.connect(globalConfig['remote_host'],globalConfig['remote_port'])
 
-    wrapperStdout = _WrapperStdout(outputQueue)
+    def __send_data(data):
+        if data == None:
+            return
+        client.post(globalConfig['remote_path']+'?uuid=%s'%consoleId,data)
+
+    wrapperStdout = _WrapperStdout(__send_data)
     __console_out__ = sys.stdout
     __console_err__ = sys.stderr
     sys.stdout = wrapperStdout
     sys.stderr = wrapperStdout
-    
+
     def readline(a):
-        sys.stdout.write(a)
+        if a != '>>> ':
+            sys.stdout.write(a)
         while cmdQueue.empty():
-            if not ctrlQueue.empty():
-                ctrl = ctrlQueue.get()
-                if ctrl == True:
-                    #raise KeyboardInterrupt
-                    raise EOFError
+            pass
 
         cmd = cmdQueue.get()
         # print cmd
         return cmd
 
-    import code
     code.interact(None,readline)
 
     sys.stdout = __console_out__

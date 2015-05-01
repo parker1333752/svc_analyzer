@@ -1,6 +1,9 @@
-def f1(a,b,c=1):
-    print a+b+c
-    pass
+a = []
+a.append(1)
+a.append(2)
+a.append(3)
+a.append(4)
+item = a.pop(0)
+print item
+print a
 
-print f1(2,2,2)
-print f1(2,2)
