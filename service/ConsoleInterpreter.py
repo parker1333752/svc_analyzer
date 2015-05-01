@@ -279,7 +279,7 @@ def console_process(cmdQueue,consoleId):
         # print cmd
         return cmd
 
-    code.interact(None,readline)
+    code.interact('',readline)
 
     sys.stdout = __console_out__
     sys.stderr = __console_err__
