@@ -21,8 +21,13 @@ class _WrapperStdout(object):
         for i in ss:
             self.send_data(i)
 
+        if self.buff == '... ':
+            self.send_data(self.buff)
+            self.buff = ''
+
     def flush(self):
         self.send_data(self.buff)
+        self.buff = ''
 
 class _TxConsoleModel(object):
     '''console Model
@@ -278,11 +283,8 @@ def console_process(cmdQueue,consoleId):
     def readline(a):
         if a != '>>> ':
             sys.stdout.write(a)
-        while cmdQueue.empty():
-            pass
 
         cmd = cmdQueue.get()
-        # print cmd
         return cmd
 
     code.interact('',readline)
