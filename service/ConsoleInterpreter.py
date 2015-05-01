@@ -10,13 +10,19 @@ class _WrapperStdout(object):
     used to get stdout
     '''
     def __init__(self,send_data):
+        self.buff = ''
         self.send_data = send_data
 
     def write(self, data):
-        self.send_data(data)
+        self.buff += data
+
+        ss = self.buff.split('\n')
+        self.buff = ss.pop()
+        for i in ss:
+            self.send_data(i)
 
     def flush(self):
-        pass
+        self.send_data(self.buff)
 
 class _TxConsoleModel(object):
     '''console Model
