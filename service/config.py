@@ -1,6 +1,6 @@
 serverConfig = {
     'host': '0.0.0.0',
-    'port': 4321,
+    'port': 8000,#4321
     'debug': True
 }
 consoleConfig = {

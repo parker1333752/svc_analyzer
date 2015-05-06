@@ -1,3 +1,4 @@
+#coding:utf-8
 import time, config
 from multiprocessing import Process
 

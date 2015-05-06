@@ -1,3 +1,4 @@
+#coding:utf-8
 import time
 import os
 from AnalyticalFlowService import TxAnalyticalFlowService

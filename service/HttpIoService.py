@@ -1,4 +1,4 @@
-#!flask/bin/python
+#coding:utf-8
 import time, os
 import json
 from json import *
@@ -37,7 +37,7 @@ class TxHttpIoService(TiloInterpreter):
 
         # return jsonify({'tasks': 1, 'running': 1})
         if appService.scheduler:
-            return json.dumps(appService.scheduler.__dict__)
+            return json.dumps(appService.scheduler.__dict__,ensure_ascii=False)
 
     @server.route('/scheduler/running', methods = ['GET','POST'])
     def schedulerRunning():
@@ -49,19 +49,19 @@ class TxHttpIoService(TiloInterpreter):
                 rt=running.to_dict()
             else:
                 rt=None
-            return json.dumps(rt)
+            return json.dumps(rt,ensure_ascii=False)
 
         elif request.method == 'POST':
             req_data=request.get_json()
             appService.interprete(req_data,-1)
-            return json.dumps(req_data)
+            return json.dumps(req_data,ensure_ascii=False)
 
     @server.route('/scheduler/waiting', methods = ['GET', 'POST'])
     def schedulerWaiting():
         appService = TxHttpIoService.appService
 
         if request.method == 'GET':
-            return json.dumps(appService.scheduler.getWaitingList())
+            return json.dumps(appService.scheduler.getWaitingList(),ensure_ascii=False)
 
     @server.route('/tasks', methods = ['GET', 'POST'])
     def tasks():
@@ -70,7 +70,7 @@ class TxHttpIoService(TiloInterpreter):
         if request.method == 'GET':
             flows=appService.scheduler.getAllFlows()
             #return jsonify(result=flows)
-            return json.dumps(flows)
+            return json.dumps(flows,ensure_ascii=False)
 
         elif request.method == 'POST':
             #req_data=request.form.to_dict()
@@ -82,7 +82,7 @@ class TxHttpIoService(TiloInterpreter):
             else:
                 appService.interprete(req_data)
 
-            return json.dumps(req_data)
+            return json.dumps(req_data,ensure_ascii=False)
 
     @server.route('/tasks/<int:flow_id>', methods=['GET','DELETE'])
     def taskId(flow_id):
@@ -90,7 +90,7 @@ class TxHttpIoService(TiloInterpreter):
 
         if request.method == 'GET':
             rt=appService.scheduler.getFlowById(flow_id)
-            return json.dumps(rt)
+            return json.dumps(rt,ensure_ascii=False)
 
         elif request.method == 'DELETE':
             req_data=request.args.get('force','false')
@@ -115,7 +115,7 @@ class TxHttpIoService(TiloInterpreter):
             else:
                 rt=None
 
-            return json.dumps(rt)
+            return json.dumps(rt,ensure_ascii=False)
 
     @server.route('/tasks/<int:flow_id>/input')
     def taskIdInput(flow_id):

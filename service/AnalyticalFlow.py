@@ -1,3 +1,4 @@
+#coding:utf-8
 import os
 from Algorithm import TxAlgorithm
 class TxAnalyticalFlow(object):
@@ -55,4 +56,4 @@ class TxAnalyticalFlow(object):
         return self.__dict__
 
     def __str__(self):
-        return 'id=%s, code=%s, note=%s, tplid=%s, inputs=%r, output=%r, algorithms=%r.'%(self.id,self.code,self.note,self.templateId,self.inputs,self.outputs,self.algorithms)
+        return 'id=%r, code=%r, note=%r, tplid=%r, inputs=%r, output=%r, algorithms=%r.'%(self.id,self.code,self.note,self.templateId,self.inputs,self.outputs,self.algorithms)
