@@ -59,7 +59,7 @@ class TxConsoleInterpreter(object):
     config = {
         # how many subprocess can be run in the same time.
         'MAX_PROCESS_COUNT' : 10,
-        # if not any cmd input over this time,subprocess will throw to garbage.
+        # if not any cmd input over this time,subprocess will be closed.
         'TERMINATE_TIMEOUT' : 3600, 
         # just for display
         'CONSOLES_FILENAME' : '<myconsole>', 
