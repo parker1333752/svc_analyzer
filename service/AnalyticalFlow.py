@@ -17,6 +17,7 @@ class TxAnalyticalFlow(object):
     def run(self):
         print '---------------- flow start (%r)----------------'%id(self)
         print self.__str__()
+        self.outputs = self.inputs
         for algorithm_name in self.algorithms:
             self.inputs=self.outputs
             algorithm=TxAlgorithm(algorithm_name)
