@@ -1,6 +1,6 @@
 from threading import Thread,Lock
 from multiprocessing import Process, Queue
-from HttpClient import TxHttpClient
+from foundation.RestClient import TxHttpClient
 import sys
 import os
 import time
