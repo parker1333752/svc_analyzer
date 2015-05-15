@@ -1,0 +1,58 @@
+import os
+
+class TxRawStorageFile(object):
+    def __init__(self,filepath = None):
+        self.filepath = filepath
+        self.length = None # =None, file is closed; else file is opened
+        #self.type = 'file'
+
+    def open(self):
+        if self.__dict__.has_key('fd') and self.fd:
+            self.fd.close()
+
+        try:
+            self.fd = open(self.filepath,'rb+',0)
+            self.length = os.path.getsize(self.filepath)
+        except:
+            fd = open(self.filepath,'w')
+            fd.close()
+            self.fd = open(self.filepath,'rb+',0)
+            self.length = 0
+
+    def close(self):
+        if self.fd:
+            self.fd.close()
+            self.length = None
+            del self.fd
+
+    def read(self, size = 0):
+        return self.fd.read(size)
+
+    def readline(self):
+        return self.fd.readline()
+
+    def write(self,data):
+        self.fd.write(data)
+
+    def append(self,data):
+        fd = open(self.filepath,'ab')
+        fd.write(data)
+        fd.close()
+
+    def load(self):
+        self.open()
+
+        data = self.read(self.length)
+        self.close()
+        return data
+
+    def save(self,data):
+        fd = open(self.filepath,'wb')
+        fd.write(data)
+        fd.close()
+
+if __name__ == '__main__':
+    '''for test'''
+    f = TxRawStorageFile('jsontest')
+    
+    f.append(None)
