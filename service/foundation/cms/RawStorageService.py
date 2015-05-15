@@ -26,6 +26,7 @@ class TxRawStorageService(object):
         return TxRawStorageFile(path)
 
     def getFile(self,id_):
+        print 'hellolololasdfdso'
         return self.newItem(id_)
 
     def remove(self, id_):

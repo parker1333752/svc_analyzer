@@ -1,6 +1,6 @@
-class TxNode(object):
+class TxMongoNode(object):
     __initValue = {
-            'id_':None,#'',
+            'id':None,#'',
             'curname':None,#'',
             'originname':None,#'',
             'nodetype':None,#0,
@@ -43,15 +43,11 @@ class TxNode(object):
         if self.parent and parentid in self.parent:
             self.parent.remove(parentid)
 
-    def setProperty(self, name, value):
-        if not self.properties:
-            self.properties = {}
+    def setProperties(self, dicts):
+        self.properties = dicts
 
-        self.properties[name] = value
-
-    def getProperty(self,name):
-        if self.properties:
-            return self.properties.get(name)
+    def getProperties(self,name):
+        return self.properties
 
     def __setattr__(self,name,value):
         if name not in self.__class__.__initValue.iterkeys():
