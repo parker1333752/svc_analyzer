@@ -1,4 +1,5 @@
 from MongoNodeService import TxMongoNodeService
+from RawStorageService import TxRawStorageService
 
 class TxCms(object):
     '''

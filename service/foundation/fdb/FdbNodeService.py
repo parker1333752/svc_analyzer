@@ -11,7 +11,7 @@ class TxFdbNodeService(object):
 
     def newItem(self, ssid,  id_):
 
-        storage = self.storage.get(ssid)
+        storage = self.storages.get(ssid)
         if storage == None:
             raise AssertionError, 'storage <%s> not exists'%ssid
 

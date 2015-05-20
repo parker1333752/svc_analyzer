@@ -1,3 +1,4 @@
+import json
 class TxNode(object):
     def __init__(self,id_,storage):
         self.id = id_
@@ -7,9 +8,10 @@ class TxNode(object):
         fid = self.id + '.json'
 
         data = None
+
         try:
             fileContent = self.storage.load(fid)
-            data = json.loads(filecontent)
+            data = json.loads(fileContent)
         except:
             pass
 
@@ -22,7 +24,7 @@ class TxNode(object):
         self.storage.save(fid,data)
 
     def getFile(self):
-        return storage.getFile(self.id)
+        return self.storage.getFile(self.id)
 
     def remove(self):
         storage.remove(self.id)
