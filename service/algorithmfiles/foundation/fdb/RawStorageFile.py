@@ -31,7 +31,7 @@ class TxRawStorageFile(object):
     def readline(self):
         data = self.fd.readline()
         if data:
-            return data.replace('\n','')
+            return data.replace('\n','').replace('\r','')
         else:
             raise AssertionError, 'end of file'
 

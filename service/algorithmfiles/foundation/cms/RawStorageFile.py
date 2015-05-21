@@ -29,7 +29,11 @@ class TxRawStorageFile(object):
         return self.fd.read(size)
 
     def readline(self):
-        return self.fd.readline()
+        data = self.fd.readline()
+        if data:
+            return data.replace('\n','').replace('\r','')
+        else:
+            raise AssertionError, 'end of file'
 
     def write(self,data):
         self.fd.write(data)
@@ -50,9 +54,3 @@ class TxRawStorageFile(object):
         fd = open(self.filepath,'wb')
         fd.write(data)
         fd.close()
-
-if __name__ == '__main__':
-    '''for test'''
-    f = TxRawStorageFile('jsontest')
-    
-    f.append(None)
