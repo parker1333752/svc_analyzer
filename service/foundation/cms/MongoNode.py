@@ -43,12 +43,6 @@ class TxMongoNode(object):
         if self.parent and parentid in self.parent:
             self.parent.remove(parentid)
 
-    def setProperties(self, dicts):
-        self.properties = dicts
-
-    def getProperties(self,name):
-        return self.properties
-
     def __setattr__(self,name,value):
         if name not in self.__class__.__initValue.iterkeys():
             pass

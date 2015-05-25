@@ -27,5 +27,5 @@ class TxNode(object):
         return self.storage.getFile(self.id)
 
     def remove(self):
-        storage.remove(self.id)
-        storage.remove(self.id + '.json')
+        self.storage.remove(self.id)
+        self.storage.remove(self.id + '.json')

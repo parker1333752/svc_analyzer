@@ -11,6 +11,20 @@ class TxMongoNodeService(object):
         id_ = str(uuid.uuid1()).replace('-','')
         return id_
 
+    def find(self, filter_):
+        nodecur = self.collection.find(filter_)
+        rt = []
+
+        for i in nodecur:
+            node = TxMongoNode()
+
+            for i,v in data.iteritems():
+                node.__dict__[i] = v
+
+            rt.append(node)
+
+        return rt
+
     def newItem(self, id_=None):
         if id_ == None:
             id_ = self.newId()
@@ -42,10 +56,30 @@ class TxMongoNodeService(object):
 
     def set(self, id_, inputNode):
         if id_ == None:
-            raise AssertionError, 'id is non-null'
+            raise AssertionError, 'id can\'t be null'
 
         inputNode.id = id_
         self.collection.update({'id':inputNode.id},inputNode.__dict__)
+
+    def iterremove(self, id_):
+        '''remove node and children_node at the same time'''
+        queue = []
+
+        iterdata = self.collection.find({'id':id_})
+        if iterdata.count > 0:
+            queue.append(iterdata)
+
+        while len(queue):
+            iterdata = queue.pop(0)
+            for i in iterdata:
+                children = i['children']
+                for child in children:
+                    child_data = self.collection.find({'id':child})
+                    if child_data.count > 0:
+                        queue.append(child_data)
+
+                # remove cur node
+                self.remove(i[u'id'])
 
     def remove(self, id_):
         iterdata = self.collection.find({'id':id_})
@@ -88,13 +122,13 @@ if __name__ == '__main__':
     cur = dbcollection.find({'id':'123123'})
 
     for ii in cur:
-        print (ii)
+        print type(ii)
     print cur.count()
 
     #print dir(dbcollection)
-    dbcollection.remove({'hello':'lisijun'})
+    #dbcollection.remove({'hello':'lisijun'})
     
-    dbcollection.update({'id':'123123'},{'id':'123123','hello':'lisijun'})#,upsert = True)
+    dbcollection.update({'id':'123123'},{'id':'123123','hello':'lisijun'},upsert = True)
     #print help(dbcollection.update)
 
     #dbcollection.save({'id':'123123'})

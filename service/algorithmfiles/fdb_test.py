@@ -24,3 +24,22 @@ mfile.save('hello')
 data = mfile.load()
 print data
 
+# copy node, format: copy(dest,src)
+node2 = nodes.newItem('rawdatafiles2','123123123')
+nodes.copy(node2,node)
+
+# remove node and file
+node.remove()
+
+# read node file as binary string
+mfile = node2.getFile()
+mfile.open()
+print 'length =',mfile.length
+try:
+    while True:
+        a = mfile.read(1)
+        if not a:
+            break
+        print '<%s>'%a
+except Exception as e:
+    print 'error :',e

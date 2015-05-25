@@ -1,2 +1,0 @@
-from DataSet import TxDataSet
-

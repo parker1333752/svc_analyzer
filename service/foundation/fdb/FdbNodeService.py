@@ -19,9 +19,12 @@ class TxFdbNodeService(object):
 
         return node
 
-    def copy(self, dstNode, srcNode):
-        '''TODO finish this'''
-        pass
+    @staticmethod
+    def copy(dstNode, srcNode):
+        fdst = dstNode.getFile()
+        fsrc = srcNode.getFile()
+        fdst.save(fsrc.load())
+        dstNode.saveProperties(srcNode.loadProperties())
 
     def getStorageService(self, ssid):
         return self.storages.get(ssid)

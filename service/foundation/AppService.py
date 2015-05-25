@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from fdb.Fdb import TxFdb
 from cms.Cms import TxCms
+from dataset.DataSetService import TxDataSetService
 import config
 
 class TxAppService:
@@ -31,3 +32,9 @@ class TxAppService:
             self.__cms = TxCms(self.getMongoClient()['test'], self.__config['cmsStorages'])
 
         return self.__cms
+
+    def getDatasets(self):
+        try:
+            value = self.__datasets
+        except:
+            self.__datasets = TxDataSetService(self.__config['datasetconfig'] , self.getCms().getNodes())

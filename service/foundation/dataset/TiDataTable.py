@@ -1,0 +1,2 @@
+class TiDataTable(object):
+    pass

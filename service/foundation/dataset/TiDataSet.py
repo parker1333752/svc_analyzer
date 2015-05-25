@@ -1,0 +1,2 @@
+class TiDataSet(object):
+    pass
