@@ -267,7 +267,7 @@ def console_process(cmdQueue,consoleId):
 
     from config import consoleConfig as globalConfig
     client = TxHttpClient()
-    client.connect(globalConfig['remote_host'] + ':' + globalConfig['remote_port'])
+    client.connect(globalConfig['remote_host'] + ':' + str(globalConfig['remote_port']))
 
     def __send_data(data):
         if data == None:
