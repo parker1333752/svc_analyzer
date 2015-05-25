@@ -10,7 +10,7 @@ class TxHttpClient(object):
         self.conn = None
         self.host = None
 
-    def connect(self,url='localhost'):
+    def connect(self,url='localhost',port = None):
         urlObject = urlparse(url)
 
         if not urlObject.hostname or urlObject.hostname == self.host:
