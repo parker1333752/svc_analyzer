@@ -17,9 +17,10 @@ class TxMongoNode(object):
             'objectstate':None#0,
             }
 
+    __slots__ = tuple(__initValue.iterkeys())
+
     def __init__(self):
-        for k,v in self.__class__.__initValue.iteritems():
-            self.__dict__[k] = v
+        self.__dict__ = __initValue
 
     def addChildren(self, childid):
         if not self.children:
@@ -43,9 +44,3 @@ class TxMongoNode(object):
         if self.parent and parentid in self.parent:
             self.parent.remove(parentid)
 
-    def __setattr__(self,name,value):
-        if name not in self.__class__.__initValue.iterkeys():
-            pass
-
-        else:
-            super.__setattr__(self,name,value)

@@ -18,5 +18,12 @@ globalConfig = {
         "datatableSsid": "datasetfiles",
     },
     "mongohost": "192.168.1.153", 
-    "mongoport": 27017
+    "mongoport": 27017,
+    "postgre":{
+        "database": "site",
+        "user": "siteadmin",
+        "password": "siteadmin",
+        "host": "192.168.1.153",
+        "port": "5432"
+    },
 }

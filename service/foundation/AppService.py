@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from fdb.Fdb import TxFdb
 from cms.Cms import TxCms
+from PostgreAccess import TxPostgreAccess
 from dataset.DataSetService import TxDataSetService
 import config
 
@@ -32,6 +33,14 @@ class TxAppService:
             self.__cms = TxCms(self.getMongoClient()['test'], self.__config['cmsStorages'])
 
         return self.__cms
+
+    def getPostgreAccess(self):
+        try:
+            value = self.__postgre
+        except:
+            self.__postgre = TxPostgreAccess(self.__config['postgre'])
+
+        return self.__postgre
 
     def getDatasets(self):
         try:
