@@ -4,7 +4,6 @@ class TxDataSet(TiDataSet):
     def __init__(self, id_ , config , nodes):
         self.nodes = nodes
         self.config = config
-        self.node = 
 
     def find(self):
         lst = []
@@ -36,9 +35,9 @@ class TxDataSet(TiDataSet):
                 return TxDataTable(node, self.nodes)
 
     def set(self, id_ , table):
-        if id_ not in self.node
-        table.node.ssid = self.config['datatableSsid']
-        self.nodes.set(id_, table.node)
+        if id_ not in self.node:
+            table.node.ssid = self.config['datatableSsid']
+            self.nodes.set(id_, table.node)
 
     def add(self, table):
         if not table.node.id:
