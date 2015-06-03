@@ -37,7 +37,10 @@ class TxRawStorageFile(object):
 
     def read(self, size = 0):
         '''need to call open() first'''
-        return self.fd.read(size)
+        try:
+            return self.fd.read(size)
+        except:
+            raise AssertionError, 'file havn\'t opened, need to call %s.open() first'%self.__class__.__name__
 
     def readline(self):
         '''need to call open() first'''

@@ -58,7 +58,7 @@ class TxPostgreAccess(object):
                 if data:
                     return data['count']
 
-    def select(self, table, columns = [], query = ''):
+    def select(self, table, query = '', columns = []):
         '''select a list of data match the query condition
         - table: table name (string)
         - columns: a list of column's names, indicate return data's content.
@@ -174,7 +174,35 @@ class TxPostgreAccess(object):
         '''-> return a list of column name
         '''
         rs = self.select('information_schema.columns',query='where table_schema=\'public\' and table_name=\'%s\''%(table,))
-        return [ i['column_name'] for i in rs]
+        return [i['column_name'] for i in rs]
+
+class PostgreUtils(object):
+
+    @classmethod
+    def datetime2timestamp(cls, m_datetime):
+        '''datetime (python object) ==> timestamp
+        - timestamp indicate seconds from 1970/01/01 08:00:00
+        '''
+        from time import mktime as _mktime
+        t = _mktime(m_datetime.timetuple())
+        return float(t) + m_datetime.microsecond/1000000.0
+
+    @classmethod
+    def timestamp2datetime(cls, m_timestamp):
+        '''timestamp ==> datetime (python object)
+        - timestamp indicate seconds from 1970/01/01 08:00:00
+        '''
+        from datetime import datetime as _datetime
+        return _datetime.fromtimestamp(m_timestamp)
+
+    @classmethod
+    def test(cls, m_timestamp):
+        d = PostgreUtils.timestamp2datetime(m_second)
+        
+        from datetime import timedelta
+        dd = timedelta(microseconds = m_microsecond)
+        d += dd
+        return d
 
 if __name__ == '__main__':
     config = {
@@ -187,5 +215,19 @@ if __name__ == '__main__':
     # pac is a instance of TxPostgreAccess.
     pac = TxPostgreAccess(config)
 
+    a = pac.select('rawdataframe','where id=82')
+    #print '%0.6f'%PostgreUtils.datetime2timestamp(a[0]['time0'])
+    print len(a)
+    b = a[0]['data']
+
+    from struct import unpack
+    m1 = unpack('b',b[0])
+    m2 = unpack('2i',b[1:9])
+    m3 = unpack('h',b[9:])
+    print m1
+    print m2
+    print m3
+
     del pac
+
 

@@ -25,13 +25,25 @@ class TxRawStorageFile(object):
             self.length = None
             del self.fd
 
+    def seek(self,offset = 0):
+        '''need to call open() first'''
+        return self.fd.seek(offset,0)
+
+    def tell(self):
+        '''get current file position,
+        need to call open() first
+        '''
+        return self.fd.tell()
+
     def read(self, size = 0):
+        '''need to call open() first'''
         try:
             return self.fd.read(size)
         except:
             raise AssertionError, 'file havn\'t opened, need to call %s.open() first'%self.__class__.__name__
 
     def readline(self):
+        '''need to call open() first'''
         data = self.fd.readline()
         if data:
             return data.replace('\n','').replace('\r','')
@@ -39,6 +51,7 @@ class TxRawStorageFile(object):
             raise AssertionError, 'end of file'
 
     def write(self,data):
+        '''need to call open() first'''
         self.fd.write(data)
 
     def append(self,data):

@@ -13,37 +13,56 @@ class TxDataSetService(TiDataSetService):
         return allDataSets
 
     def newItem(self,id_ = None):
+        '''Create a new dataset object (TxDataSet).
+        piooiioo
+        '''
         if id_ == None:
             id_ = self.newId()
 
         if id_ and self.nodes.get(id_):
             raise AssertionError, 'This id has been used'
 
-        return TxDataSet(id_,config,  self.nodes)
+        dataset = TxDataSet(config,  self.nodes)
+        dataset.node = self.nodes.newItem()
+        dataset.id = id_
+        return dataset
 
     def newId(self):
+        '''Create a new id as dataset_id.
+        override it to change the way id generated.
+        '''
         id_ = str(uuid.uuid1()).replace('-','')
         return id_
 
     def get(self, id_):
+        '''Get a dataset (TxDataSet object), and load node information.
+        '''
         node = self.nodes.get(id_)
         if node:
-            return TxDataSet(node,config, self.nodes)
+            dataset = TxDataSet(config, self.nodes)
+            dataset.node = node
+            return dataset
 
     def set(self, id_ , dataset):
+        '''Set dataset descriptor to node.
+        '''
         dataset.node.ssid = self.config['datasetSsid']
         self.nodes.set(id_, dataset.node)
 
     def add(self, dataset):
+        '''Add a node in MongoDB to storage dataset information.
+        '''
         node = dataset.node
-        if not node.id:
-            node.id = self.newId()
+        if not dataset.id:
+            dataset.id = self.newId()
 
-        node.ssid = self.config['datasetSsid']
+        dataset.node.ssid = self.config['datasetSsid']
 
-        dataset.node = node
         return self.nodes.add(dataset.node)
 
     def remove(self, id_):
+        '''Remove dataset (and corresponding node)
+        Recursively remove datatable.
+        '''
         self.nodes.iterremove(id_)
 

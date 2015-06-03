@@ -4,17 +4,7 @@ class TxDataSet(TiDataSet):
     def __init__(self, id_ , config , nodes):
         self.nodes = nodes
         self.config = config
-
-        if type(id_) == type(u'') or type(id_) == type(b''):
-            self.node = self.nodes.get(id_)
-            if not self.node:
-                self.node = self.nodes.newItem(id_)
-
-        elif type(id_) == type(self.nodes.newItem()):
-            self.node = id_
-
-        else:
-            raise AssertionError, 'type of id no match <unicode>'
+        self.node = 
 
     def find(self):
         lst = []
@@ -32,6 +22,9 @@ class TxDataSet(TiDataSet):
         pass
 
     def newId(self):
+        '''Create a new id as dataset_id.
+        override it to change the way id generated.
+        '''
         id_ = str(uuid.uuid1()).replace('-','')
         return id_
 
@@ -43,6 +36,7 @@ class TxDataSet(TiDataSet):
                 return TxDataTable(node, self.nodes)
 
     def set(self, id_ , table):
+        if id_ not in self.node
         table.node.ssid = self.config['datatableSsid']
         self.nodes.set(id_, table.node)
 
@@ -63,6 +57,14 @@ class TxDataSet(TiDataSet):
 
         self.node.removeChildren(id_)
         self.nodes.remove(id_)
+
+    @property
+    def id(self):
+        return self.node.id
+
+    @id.setter
+    def id(self, id_):
+        self.node.id = id_
 
     @property
     def descriptor(self):

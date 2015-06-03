@@ -20,11 +20,7 @@ class TxDataTable(TiDataTable):
         # for improve reading speed
         self.filepos = {0:0}
 
-    def select(self, rowstart , rowend):
-        '''row index start from 0,
-        return data from rowstart (include) to rowend (exclude)
-        '''
-        if self.descriptor['dataformat'] == 'binary':
+    def _select_binary(self, rowstart, rowend):
             fd = self.nodes.getFile(self.node.id)
             fd.open()
 
@@ -45,7 +41,7 @@ class TxDataTable(TiDataTable):
             fd.close()
             return rt
 
-        elif self.descriptor['dataformat'] == 'ascii':
+    def _select_ascii(self, rowstart, rowend):
             last_row = self.__find_maxOfless(self.filepos.iterkeys(), rowstart)
 
             fd = open()
@@ -72,6 +68,16 @@ class TxDataTable(TiDataTable):
                     break
 
             return rt
+
+    def select(self, rowstart , rowend):
+        '''row index start from 0,
+        return data from rowstart (include) to rowend (exclude)
+        '''
+        if self.descriptor['dataformat'] == 'binary':
+            return self._select_binary(rowstart, rowend)
+
+        elif self.descriptor['dataformat'] == 'ascii':
+            return self._select_ascii(rowstart, rowend)
 
     @staticmethod
     def __find_maxOfless(iterdata, maxdata):
