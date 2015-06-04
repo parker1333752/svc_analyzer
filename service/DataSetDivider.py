@@ -19,6 +19,7 @@ class TxDataSetDivider(object):
         end_datetime = utils.timestamp2datetime(self.filter['endtime'])
         print begin_datetime
         print end_datetime
+        print self.filter['loggerid']
         
         sql = 'where time0 >= %s and time0 < %s and deviceid =%s order by time0,timeoffset limit 30'
         return self.ps.select('rawdataframe', sql ,(begin_datetime,end_datetime,self.filter['loggerid']))
