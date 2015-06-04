@@ -157,7 +157,8 @@ class TxHttpIoService(TiloInterpreter):
 
         return jsonify(result=1)
 
-    # @server.route('/jquery.min.js')
-    # def jquery():
-    #     appService = TxHttpIoService.appService
-    #     return render_template('jquery.min.js', scheduler=appService.scheduler)
+    @server.route('/divideDataset', method = ['POST'])
+    def divideDataset():
+        req_data = request.get_json()
+        print 'divideDataset',req_data
+        return 'Successful python'
