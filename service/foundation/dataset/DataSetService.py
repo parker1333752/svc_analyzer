@@ -1,20 +1,26 @@
 from DataSet import TxDataSet
 from TiDataSetService import TiDataSetService
+import uuid
 
 class TxDataSetService(TiDataSetService):
     def __init__(self, config, nodes):
         self.config = config
         self.nodes = nodes
 
-    def find(self, filter_):
+    def find(self, filter_={}):
         filter_.update({'ssid':self.config['datasetSsid']})
         allDataSetNodes = self.nodes.find(filter_)
-        allDataSets = [ TxDataSet(x,config, self.nodes) for x in allDataSetNodes ]
+
+        def creaate_dataset(node):
+            dataset = TxDataSet(self, self.config, self.nodes)
+            dataset.node = node
+            return dataset
+
+        allDataSets = [ creaate_dataset(x) for x in allDataSetNodes ]
         return allDataSets
 
     def newItem(self,id_ = None):
         '''Create a new dataset object (TxDataSet).
-        piooiioo
         '''
         if id_ == None:
             id_ = self.newId()
@@ -22,9 +28,10 @@ class TxDataSetService(TiDataSetService):
         if id_ and self.nodes.get(id_):
             raise AssertionError, 'This id has been used'
 
-        dataset = TxDataSet(config,  self.nodes)
+        dataset = TxDataSet(self, self.config,  self.nodes)
         dataset.node = self.nodes.newItem()
         dataset.id = id_
+        print 'new set'
         return dataset
 
     def newId(self):
@@ -39,7 +46,7 @@ class TxDataSetService(TiDataSetService):
         '''
         node = self.nodes.get(id_)
         if node:
-            dataset = TxDataSet(config, self.nodes)
+            dataset = TxDataSet(self , self.config, self.nodes)
             dataset.node = node
             return dataset
 

@@ -1,9 +1,12 @@
 from DataTable import TxDataTable
 from TiDataSet import TiDataSet
+import uuid
+
 class TxDataSet(TiDataSet):
-    def __init__(self, id_ , config , nodes):
+    def __init__(self, dss, config , nodes):
         self.nodes = nodes
         self.config = config
+        self.dss = dss
 
     def find(self):
         lst = []
@@ -18,7 +21,18 @@ class TxDataSet(TiDataSet):
             return lst
 
     def newItem(self, id_ = None):
-        pass
+        '''Create a new datatable object (TxDataTable)
+        '''
+        if id_ == None:
+            id_ = self.newId()
+
+        if id_ and self.nodes.get(id_):
+            raise AssertionError, 'This id has been used'
+
+        datatable = TxDataTable(self.config, self.nodes)
+        datatable.node = self.nodes.newItem()
+        datatable.id = id_
+        return datatable
 
     def newId(self):
         '''Create a new id as dataset_id.
@@ -28,14 +42,16 @@ class TxDataSet(TiDataSet):
         return id_
 
     def get(self, id_):
-        if id_ in self.node.children:
+        if self.node.children and id_ in self.node.children:
             node = self.nodes.get(id_)
 
             if node:
-                return TxDataTable(node, self.nodes)
+                datatable = TxDataTable(self.config, self.nodes)
+                datatable.node = node
+                return datatable
 
     def set(self, id_ , table):
-        if id_ not in self.node:
+        if self.node.children and id_ in self.node.children:
             table.node.ssid = self.config['datatableSsid']
             self.nodes.set(id_, table.node)
 
@@ -48,6 +64,7 @@ class TxDataSet(TiDataSet):
         self.node.addChildren(table.node.id)
         table.node.addParent(self.node.id)
 
+        self.dss.set(self.id, self)
         self.nodes.add(table.node)
 
     def remove(self, id_):
@@ -55,6 +72,7 @@ class TxDataSet(TiDataSet):
             return
 
         self.node.removeChildren(id_)
+        self.dss.set(self.id, self)
         self.nodes.remove(id_)
 
     @property
@@ -67,9 +85,23 @@ class TxDataSet(TiDataSet):
 
     @property
     def descriptor(self):
+        try:
+            value = self.node
+        except:
+            return {}
+
+        if self.node.properties == None:
+            self.node.properties = {}
+
+        if self.node.properties.get('descriptor') == None:
+            self.node.properties['descriptor'] = {}
+
         return self.node.properties['descriptor']
 
     @descriptor.setter
     def descriptor(self, desc):
+        if self.node.properties == None:
+            self.node.properties = {}
+
         self.node.properties['descriptor'] = desc
 

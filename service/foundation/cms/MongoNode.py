@@ -1,5 +1,6 @@
 class TxMongoNode(object):
-    __initValue = {
+    '''
+    initValue = {
             'id':None,#'',
             'curname':None,#'',
             'originname':None,#'',
@@ -16,11 +17,26 @@ class TxMongoNode(object):
             'state':None,#1,
             'objectstate':None#0,
             }
-
-    __slots__ = tuple(__initValue.iterkeys())
+    '''
 
     def __init__(self):
-        self.__dict__ = __initValue
+        # self.__dict__ = self.__class__.initValue
+
+        self.id = None
+        self.curname = None
+        self.originname = None
+        self.nodetype = None
+        self.ssid = None
+        self.content = None
+        self.contenttype = None
+        self.link = None
+        self.properties = None
+        self.thumbnail = None
+        self.parent = None
+        self.children = None
+        self.attachment = None
+        self.state = None
+        self.objectstate = None
 
     def addChildren(self, childid):
         if not self.children:

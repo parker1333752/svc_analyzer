@@ -10,7 +10,7 @@ class TxRawStorageService(object):
 
     def __getPath(self, id_):
         path = self.rootdir
-        #path += '/' + id_[:self.__class__.config['hash_length']]
+        path += '/' + id_[:self.__class__.config['hash_length']]
 
         if not os.path.exists(path):
             os.makedirs(path)

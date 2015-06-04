@@ -47,3 +47,5 @@ class TxAppService:
             value = self.__datasets
         except:
             self.__datasets = TxDataSetService(self.__config['datasetconfig'] , self.getCms().getNodes())
+
+        return self.__datasets

@@ -1,83 +1,99 @@
 from TiDataTable import TiDataTable
+from struct import pack
+import uuid
 import json
 
 class TxDataTable(TiDataTable):
-    def __init__(self, id_, nodes):
+    def __init__(self, config,  nodes):
+        self.config = config
         self.nodes = nodes
 
-        if type(id_) == type(u'') or type(id_) == type(b''):
-            self.node = self.nodes.get(id_)
-            if not self.node:
-                self.node = self.nodes.newItem(id_)
-
-        elif type(id_) == type(self.nodes.newItem()):
-            self.node = id_
-
-        else:
-            raise AssertionError, 'type of id no match <unicode>'
-
         # Record line start position,
-        # for improve reading speed
-        self.filepos = {0:0}
+        # used to improve reading speed.
+        self.__filepos = {0:0}
 
     def _select_binary(self, rowstart, rowend):
-            fd = self.nodes.getFile(self.node.id)
-            fd.open()
+        fd = self.nodes.getFile(self.node.id)
+        fd.open()
 
-            frameLength = self.frameLength
-            rowcount = fd.length / frameLength
+        frameLength = self.frameLength
+        rowcount = self.rowCount
 
-            if rowstart >= rowcount:
-                return None
-            if rowend > rowcount:
-                rowend = rowcount
+        if rowstart >= rowcount:
+            return None
+        if rowend > rowcount:
+            rowend = rowcount
 
-            fd.seek(frameLength * rowstart)
-            rt = []
-            for i in range(rowstart,rowend):
-                data = fd.read(frameLength)
-                rt.append(data)
+        fd.seek(frameLength * rowstart)
+        rt = []
+        for i in range(rowstart,rowend):
+            data = fd.read(frameLength)
+            rt.append(data)
 
-            fd.close()
-            return rt
+        fd.close()
+        return rt
 
     def _select_ascii(self, rowstart, rowend):
-            last_row = self.__find_maxOfless(self.filepos.iterkeys(), rowstart)
+        last_row = self.__find_maxOfless(self.__filepos.iterkeys(), rowstart)
 
-            fd = open()
-            fd.seek(self.filepos[last_row])
+        fd.open()
+        fd.seek(self.__filepos[last_row])
 
-            for i in range(last_row,rowstart):
-                data = fd.readline()
-                if data:
-                    self.filepos[i+1] = fd.tell()
-                else:
-                    break
+        for i in range(last_row,rowstart):
+            data = fd.readline()
+            if data:
+                self.__filepos[i+1] = fd.tell()
+            else:
+                break
 
-            rt = []
-            for i in range(rowstart,rowend):
-                data = fd.readline()
-                if data:
-                    self.filepos[i+1] = fd.tell()
-                    try:
-                        rt.append(json.loads(data))
-                    except:
-                        pass
+        rt = []
+        for i in range(rowstart,rowend):
+            data = fd.readline()
+            if data:
+                self.__filepos[i+1] = fd.tell()
+                try:
+                    rt.append(json.loads(data))
+                except:
+                    pass
 
-                else:
-                    break
+            else:
+                break
 
-            return rt
+        fd.close()
+        return rt
 
     def select(self, rowstart , rowend):
         '''row index start from 0,
         return data from rowstart (include) to rowend (exclude)
         '''
-        if self.descriptor['dataformat'] == 'binary':
-            return self._select_binary(rowstart, rowend)
-
-        elif self.descriptor['dataformat'] == 'ascii':
+        if self.descriptor.get('dataformat') == 'ascii':
             return self._select_ascii(rowstart, rowend)
+
+        #elif self.descriptor['dataformat'] == 'binary':
+        '''set as default mode : binary'''
+        return self._select_binary(rowstart, rowend)
+
+    def append(self, data):
+        if type(data) == type([]):
+            temp = data
+            data = ''
+            for i in temp:
+                if len(i) <  self.frameLength:
+                    i += (self.frameLength - len(i))*pack('b',0)
+                data = ''.join([data, i[:self.frameLength]])
+
+        elif type(data) == type(b''):
+            mod = len(data) % self.frameLength
+            if mod:
+                data += (self.frameLength - mod)*pack('b',0)
+
+        else:
+            raise AssertionError, 'Type of data if invalid'
+
+        fd = self.nodes.getFile(self.node.id)
+        fd.open()
+        fd.append(data)
+        fd.close()
 
     @staticmethod
     def __find_maxOfless(iterdata, maxdata):
@@ -104,22 +120,85 @@ class TxDataTable(TiDataTable):
             return linelst[l]
 
     @property
+    def rowCount(self):
+        '''Only used in binary format file'''
+        try:
+            rt = self.__rowCount
+        except:
+            frameLength = self.frameLength
+
+            fd = self.nodes.getFile(self.node.id)
+            filelen = fd.length
+            if not fd.length:
+                fd.open()
+                filelen = fd.length
+                fd.close()
+
+            rowcount = filelen / frameLength
+            return rowcount
+
+    #@property
+    #def frameLength(self):
+        #'''Only used in binary format file'''
+        #try:
+            #rt = self.__frameLength
+        #except:
+            ## length = 0
+            ## for i in self.descriptor['columns']:
+                ## length += i['size']
+
+            #fd = self.nodes.getFile(self.node.id)
+            #fd.open()
+            #a = fd.read(2)
+
+            #import struct
+            #try:
+                #length = struct.unpack('h',a)
+            #except:
+                #raise AssertionError, 'File not exists'
+            #finally:
+                #fd.close()
+
+            #self.__frameLength = length
+        #return self.__frameLength
+
+    @property
     def frameLength(self):
+        '''Only used in binary format file'''
         try:
             rt = self.__frameLength
         except:
-            length = 0
-            for i in self.descriptor['columns']:
-                length += i['size']
-            self.__frameLength = length
+            self.__frameLength = self.config['frameLength']
 
         return self.__frameLength
 
     @property
+    def id(self):
+        return self.node.id
+
+    @id.setter
+    def id(self, id_):
+        self.node.id = id_
+
+    @property
     def descriptor(self):
+        try:
+            value = self.node
+        except:
+            return {}
+
+        if self.node.properties == None:
+            self.node.properties = {}
+
+        if self.node.properties.get('descriptor') == None:
+            self.node.properties['descriptor'] = {}
+
         return self.node.properties['descriptor']
 
     @descriptor.setter
     def descriptor(self, desc):
+        if self.node.properties == None:
+            self.node.properties = {}
+
         self.node.properties['descriptor'] = desc
 

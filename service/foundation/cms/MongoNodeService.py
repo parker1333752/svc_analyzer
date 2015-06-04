@@ -8,14 +8,14 @@ class TxMongoNodeService(object):
         self.storages = storages
 
     def newId(self):
-        id_ = str(uuid.uuid1()).replace('-','')
+        id_ = str(uuid.uuid1()).replace('-','').strip()
         return id_
 
     def find(self, filter_):
         nodecur = self.collection.find(filter_)
         rt = []
 
-        for i in nodecur:
+        for data in nodecur:
             node = TxMongoNode()
 
             for i,v in data.iteritems():
@@ -71,12 +71,17 @@ class TxMongoNodeService(object):
 
         while len(queue):
             iterdata = queue.pop(0)
+            if iterdata == None:
+                continue
+
             for i in iterdata:
                 children = i['children']
-                for child in children:
-                    child_data = self.collection.find({'id':child})
-                    if child_data.count > 0:
-                        queue.append(child_data)
+
+                if children != None:
+                    for child in children:
+                        child_data = self.collection.find({'id':child})
+                        if child_data.count > 0:
+                            queue.append(child_data)
 
                 # remove cur node
                 self.remove(i[u'id'])
@@ -92,7 +97,7 @@ class TxMongoNodeService(object):
         if not data:
             return
 
-        storage = self.getStorageService(data.ssid)
+        storage = self.getStorageService(data.get('ssid'))
         if not storage:
             return
 
