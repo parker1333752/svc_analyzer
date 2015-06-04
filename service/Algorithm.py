@@ -25,9 +25,9 @@ class TxAlgorithm(object):
         fout.close()
         fout=open(self.outputsfilename,'w')
         if self.name[-2:]=='py':
-            p=subprocess.Popen(['python',self.name],stdin=fin,stdout=fout,cwd=AlgorithmFolder)
+            p=subprocess.Popen(['python',self.name],cwd=AlgorithmFolder)
         else:
-            p=subprocess.Popen(self.name,stdin=fin,stdout=fout,cwd=AlgorithmFolder)
+            p=subprocess.Popen(self.name,cwd=AlgorithmFolder)
 
         # maybe use select-pool can optimize this wait
         returncode=p.wait()
