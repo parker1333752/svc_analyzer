@@ -157,8 +157,9 @@ class TxHttpIoService(TiloInterpreter):
 
         return jsonify(result=1)
 
-    @server.route('/divideDataset', method = ['POST'])
+    @server.route('/divideDataset', methods = ['POST'])
     def divideDataset():
         req_data = request.get_json()
         print 'divideDataset',req_data
         return 'Successful python'
+
