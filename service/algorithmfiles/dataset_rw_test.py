@@ -73,9 +73,9 @@ dss = apps.getDatasets()
 '''
 3. R/W datatable file
 '''
-dataset = dss.get('da16cbea09fe11e5aa02d4ae52cc5a07')
-datatable = dataset.get('257a76c40a9d11e58c46d4ae52cc5a07')
-print datatable.rowCount
+#dataset = dss.get('da16cbea09fe11e5aa02d4ae52cc5a07')
+#datatable = dataset.get('257a76c40a9d11e58c46d4ae52cc5a07')
+#print datatable.rowCount
 
 '''write to a datatable'''
 #from struct import pack
@@ -86,3 +86,18 @@ print datatable.rowCount
 #print datatable.select(0,1)
 #print datatable.select(11,12)
 
+
+
+
+'''
+4. get datatables from testid
+'''
+ps = apps.getPostgreAccess()
+testid = 264
+datasetid = ps.select('task','where id = %s',(testid,))[0]['nodeid']
+dataset = dss.get(datasetid)
+datatable_ids = dataset.node.children
+for i in datatable_ids:
+    datatable = dataset.get(i)
+    # data = datatable.select(0,1)
+    print len(datatable.select(0,1)[0])

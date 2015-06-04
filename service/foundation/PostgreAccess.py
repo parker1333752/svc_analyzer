@@ -38,7 +38,7 @@ class TxPostgreAccess(object):
                 password=config['password'],host=config['host'],port=config['port']
                 ,cursor_factory=extras.DictCursor)
 
-    def count(self, table, query=''):
+    def count(self, table, query='', query_args = None):
         '''get count of records (rows) of one table
         - table: table name (string)
         - query: a query string to indicate which rows of data to update, like 'where id = 1'
@@ -53,6 +53,9 @@ class TxPostgreAccess(object):
         # In case of exception the transaction is rolled back.
         with self.conn:
             with self.conn.cursor() as cur:
+                if query_args:
+                    sql = cur.mogrify(sql,query_args)
+
                 cur.execute(sql)
                 data = cur.fetchone()
                 if data:
@@ -78,6 +81,7 @@ class TxPostgreAccess(object):
         with self.conn:
             with self.conn.cursor() as cur:
                 cur = self.conn.cursor()
+
                 if query_args:
                     sql = cur.mogrify(sql,query_args)
 
@@ -116,7 +120,7 @@ class TxPostgreAccess(object):
                 cur.execute(sql, tuple(data.itervalues()))
                 return True
 
-    def update(self, table, data = {}, query = ''):
+    def update(self, table, data = {}, query = '', query_args = None):
         '''update a record (one row) in database.
         - table: table name (string)
         - data: a python-dict has structure of {'column1':value}, represent a row data in database
@@ -147,11 +151,15 @@ class TxPostgreAccess(object):
                     s = i + '=%s'
                     lst_data.append(s)
 
+                if query_args != None:
+                    query = cur.mogrify(query,query_args)
+
                 sql = 'update ' + table + ' set ' + ','.join(lst_data) + ' ' + query
+
                 cur.execute(sql,tuple(data.itervalues()))
                 return True
 
-    def delete(self, table, query):
+    def delete(self, table, query, query_args = None):
         '''delete records (rows) which match query condition.
         - table: table name (string)
         - query: a query string to indicate which rows of data to update, like 'where id = 1'
@@ -167,6 +175,9 @@ class TxPostgreAccess(object):
         sql = 'delete from ' + table + ' ' + query
         with self.conn:
             with self.conn.cursor() as cur:
+                if query_args != None:
+                    sql = cur.mogrify(sql,query_args)
+
                 cur.execute(sql)
                 return True
 

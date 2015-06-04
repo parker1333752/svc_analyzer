@@ -31,7 +31,6 @@ class TxDataSetService(TiDataSetService):
         dataset = TxDataSet(self, self.config,  self.nodes)
         dataset.node = self.nodes.newItem()
         dataset.id = id_
-        print 'new set'
         return dataset
 
     def newId(self):
