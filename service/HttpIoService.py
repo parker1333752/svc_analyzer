@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, render_template
 from config import serverConfig
 from loInterpreter import TiloInterpreter
 from ConsoleInterpreter import TxConsoleInterpreter
+from DataSetDivider import TxDataSetDivider
 
 class TxHttpIoService(TiloInterpreter):
     server = Flask('HttpIoService')
@@ -160,6 +161,8 @@ class TxHttpIoService(TiloInterpreter):
     @server.route('/divideDataset', methods = ['POST'])
     def divideDataset():
         req_data = request.get_json()
-        print 'divideDataset',req_data
+        divider = TxDataSetDivider(req_data)
+        print 'divideDataset'
+        print divider.getRawDataFrame()
         return 'Successful python'
 

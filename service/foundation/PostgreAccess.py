@@ -58,7 +58,7 @@ class TxPostgreAccess(object):
                 if data:
                     return data['count']
 
-    def select(self, table, query = '', columns = []):
+    def select(self, table, query = '', query_args = None, columns = []):
         '''select a list of data match the query condition
         - table: table name (string)
         - columns: a list of column's names, indicate return data's content.
@@ -78,6 +78,9 @@ class TxPostgreAccess(object):
         with self.conn:
             with self.conn.cursor() as cur:
                 cur = self.conn.cursor()
+                if query_args:
+                    sql = cur.mogrify(sql,query_args)
+
                 cur.execute(sql)
                 return cur.fetchall()
 
@@ -181,28 +184,20 @@ class PostgreUtils(object):
     @classmethod
     def datetime2timestamp(cls, m_datetime):
         '''datetime (python object) ==> timestamp
-        - timestamp indicate seconds from 1970/01/01 08:00:00
+        - timestamp indicate miliseconds from 1970/01/01 08:00:00
         '''
         from time import mktime as _mktime
         t = _mktime(m_datetime.timetuple())
-        return float(t) + m_datetime.microsecond/1000000.0
+        return float(t*1000.0) + m_datetime.microsecond/1000.0
 
     @classmethod
     def timestamp2datetime(cls, m_timestamp):
         '''timestamp ==> datetime (python object)
-        - timestamp indicate seconds from 1970/01/01 08:00:00
+        - timestamp indicate miliseconds from 1970/01/01 08:00:00
         '''
         from datetime import datetime as _datetime
+        m_timestamp /= 1000.0
         return _datetime.fromtimestamp(m_timestamp)
-
-    @classmethod
-    def test(cls, m_timestamp):
-        d = PostgreUtils.timestamp2datetime(m_second)
-        
-        from datetime import timedelta
-        dd = timedelta(microseconds = m_microsecond)
-        d += dd
-        return d
 
 if __name__ == '__main__':
     config = {
