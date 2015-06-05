@@ -97,7 +97,9 @@ testid = 264
 datasetid = ps.select('task','where id = %s',(testid,))[0]['nodeid']
 dataset = dss.get(datasetid)
 datatable_ids = dataset.node.children
+print datatable_ids
 for i in datatable_ids:
     datatable = dataset.get(i)
-    # data = datatable.select(0,1)
+    print datatable.id
+    #data = datatable.select(0,1)
     print len(datatable.select(0,1)[0])

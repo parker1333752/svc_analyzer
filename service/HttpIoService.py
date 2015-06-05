@@ -162,6 +162,10 @@ class TxHttpIoService(TiloInterpreter):
     def divideDataset():
         req_data = request.get_json()
         divider = TxDataSetDivider(req_data)
-        divider.divide()
+        try:
+            divider.divide()
+        except Exception as e:
+            return str(e)
+
         return 'Successfully divided'
 

@@ -57,14 +57,15 @@ class TxDataSetDivider(object):
 if __name__ == '__main__':
     #['data', 'altitude', 'time0', 'longitude', 'latitude', 'state', 'deviceid', 'timeoffset', 'type', 'id']
 
-    #import time
-    #end = time.time() * 1000
-    #begin = end - 3600*24*5*1000
+    import time
+    end = time.time() * 1000
+    begin = end - 3600*24*5*1000
 
-    #flt = {'begintime':begin,'endtime':end,'loggerid':151513,u'testid':264}
-    #a = TxDataSetDivider(flt)
-    #a.divide()
+    flt = {'begintime':begin,'endtime':end,'loggerid':151513,u'testid':264}
+    a = TxDataSetDivider(flt)
+    a.divide()
 
+    '''
     apps = TxAppService()
     ps = apps.getPostgreAccess()
     dss = apps.getDatasets()
@@ -75,6 +76,7 @@ if __name__ == '__main__':
     print datatable.frameLength
     print datatable.rowCount
     print len(datatable.select(1,2)[0])
+    '''
 
     #dataset = dss.pirnt
 
